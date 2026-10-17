@@ -1,0 +1,9 @@
+.gradle/
+build/
+.session/
+.chrome-profile/
+.idea/
+*.log
+*.png
+2fa_code.txt
+
