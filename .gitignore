@@ -6,4 +6,6 @@ build/
 *.log
 *.png
 2fa_code.txt
+.env
+application-local.properties
 

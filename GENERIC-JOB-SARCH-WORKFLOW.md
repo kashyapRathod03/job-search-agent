@@ -43,7 +43,7 @@ This workflow guides a job search agent through:
 4. Fill credentials in login form
    - Find email textbox ref from snapshot
    - Command: agent-browser fill [email-ref] "user-email@gmail.com"
-
+   
    - Find password textbox ref from snapshot
    - Command: agent-browser fill [password-ref] "user-password"
 
@@ -78,26 +78,26 @@ credentials are located at last of this file
 1. Enter search keywords
    - Use target role keywords from user profile
    - Command: agent-browser fill [search-ref] "Java Developer"
-
+   
    - Or multiple keywords: "Java Developer Spring Boot"
 
 2. Apply search filters (optional but recommended)
    - **Location filter**: Apply user's preferred locations
      - Command: agent-browser click [location-filter-ref]
      - Select from dropdown: user's preferred cities/regions
-
+   
    - **Date posted filter**: Filter by recency
      - Command: agent-browser click [date-filter-ref]
      - Select: "Past 24 hours", "Past week", "Past 2 weeks", "Past 4 weeks"
-
+   
    - **Experience filter**: Apply experience level preferences
      - Command: agent-browser click [experience-filter-ref]
      - Select: "Entry level", "Associate", "1-3 years", etc.
-
+   
    - **Work mode filter**: Hybrid/Remote/On-site
      - Command: agent-browser click [workmode-filter-ref]
      - Select preferred options
-
+   
    - **Employment type**: Full-time, Contract, etc.
      - Command: agent-browser click [employment-type-ref]
      - Select preferred options
@@ -174,23 +174,23 @@ credentials are located at last of this file
 2. Fill application form fields (if present):
    - **Email field**: Fill with user's email from profile
      - Command: agent-browser fill [email-ref] "user-email@gmail.com"
-
+   
    - **Job category**: Select matching category
      - Command: agent-browser fill [category-ref] "Technology" or appropriate category
-
+   
    - **Location selection**: Choose work location
      - Command: agent-browser fill [location-ref] "City, State" or select from dropdown
-
+   
    - **Technology/Department**: Select relevant department
      - Command: agent-browser click [tech-ref] or fill field
-
+   
    - **Additional fields**: Any other required form fields
      - Fill with appropriate information from user profile
 
 3. Submit the application
    - Find and click "Submit" or "Apply" button
    - Command: agent-browser click [submit-ref] or [apply-ref]
-
+   
    - Or if multiple steps: Complete all fields first, then submit
 
 4. Handle confirmation dialogs (if present):
@@ -305,7 +305,7 @@ credentials are located at last of this file
 
 ### 2. Covering Dialogs/Banners
 **Problem**: Buttons covered by divs, modals, or sticky headers
-**Solution**:
+**Solution**: 
 - Take snapshot to identify covering element
 - Click covering element first, then target button
 - Or use Esc key to dismiss modals
@@ -416,8 +416,13 @@ D:\job-search-agent>agent-browser click @<signin button ref>
 
 ---
 
-User credentials should be loaded securely from environment variables:
-LINKEDIN_USERNAME and LINKEDIN_PASSWORD
+Original user credentials to login into linkedin:
+Email Id: kashyapdr044@gmail.com
+Password: 12801280
+
+Gmail Creddentials if model need to send mail:
+from G-mail account: kashyapdr044@gmail.com
+TO G-mail account: rathodkashyap044@gmail.com
 
 ---
 

@@ -111,6 +111,8 @@ public class JobSearchAgentApplication implements CommandLineRunner {
                         processedJobs.add(job);
                         playwrightService.sleepRandomDelay();
                     }
+                    // Anti-bot pause between search queries
+                    playwrightService.sleepRandomDelay();
                 }
             }
 

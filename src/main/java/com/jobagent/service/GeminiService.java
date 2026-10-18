@@ -51,24 +51,24 @@ public class GeminiService {
         String prompt = String.format("""
                 You are a senior technical recruiter and career advisor.
                 Evaluate if this job listing matches the candidate's profile and preferences.
-
+                
                 RULES:
                 1. Never invent or hallucinate candidate skills. Use only verified information.
                 2. Avoid Senior/Staff/Principal roles, pure frontend, pure QA, or sales roles.
                 3. High priority technologies: Java, Spring Boot, REST APIs, React, SQL.
-
+                
                 JOB DETAILS:
                 Title: %s
                 Company: %s
                 Location: %s
                 Description:
                 %s
-
+                
                 CANDIDATE TARGET PREFERENCES:
                 Roles: %s
                 Locations: %s
                 Experience: %s
-
+                
                 Respond in valid JSON with this exact schema:
                 {
                   "matchScore": <number 0-100>,
@@ -108,20 +108,20 @@ public class GeminiService {
         String prompt = String.format("""
                 You are a technical resume optimization expert.
                 Tailor the candidate's resume for this specific job posting.
-
+                
                 CRITICAL CONSTRAINTS:
                 - Do NOT invent, exaggerate, or fabricate any experience, skill, certification, or project.
                 - Only emphasize and highlight technologies and accomplishments that ALREADY exist in the verified resume.
                 - Reorganize keywords and summary to directly match the target job description.
-
+                
                 TARGET JOB:
                 Title: %s at %s
                 Description:
                 %s
-
+                
                 VERIFIED RESUME:
                 %s
-
+                
                 Generate a clean, professional, concise Markdown resume ready to convert into a PDF.
                 """,
                 job.getTitle(), job.getCompany(),
@@ -169,7 +169,7 @@ public class GeminiService {
 
         String prompt = String.format("""
                 You are answering an application form question on LinkedIn on behalf of the applicant.
-
+                
                 APPLICANT PROFILE:
                 Name: %s
                 Location: %s
@@ -178,13 +178,13 @@ public class GeminiService {
                 Current CTC: 5.7 LPA
                 Expected CTC: 8 LPA (or negotiable based on budget)
                 Willing to relocate: Yes
-
+                
                 JOB: %s at %s
-
+                
                 QUESTION: %s
                 FIELD TYPE: %s
                 AVAILABLE OPTIONS: %s
-
+                
                 RULES:
                 1. Provide ONLY the exact, concise answer string to input into the field or select.
                 2. If it is a number or years of experience, output ONLY the number (e.g. '2' or '3').
@@ -234,7 +234,7 @@ public class GeminiService {
                 You are an expert career assistant. Answer the following LinkedIn application form questions for candidate %s applying for:
                 Job Title: %s
                 Company: %s
-
+                
                 CANDIDATE VERIFIED PROFILE:
                 - Full Name: %s
                 - Location: %s
@@ -246,16 +246,16 @@ public class GeminiService {
                 - Require Visa Sponsorship: No
                 - Willing to relocate: Yes
                 - Education: Bachelor of Technology in Information Technology
-
+                
                 QUESTIONS:
                 %s
-
+                
                 RULES:
                 1. For numeric or salary or experience questions (notice period, current CTC, expected CTC, years of experience, months of experience), output ONLY the raw integer number (e.g. "60", "570000", "800000", "2", "0") WITHOUT any currency signs, words, units or text like 'days' or 'LPA'.
                 2. If 'Options' are provided, the answer MUST EXACTLY MATCH one of the strings in the Options list.
                 3. For sponsorship questions, answer "No". For authorization/work questions, answer "Yes".
                 4. For additional months of experience, answer "0" or "0 month" if available.
-
+                
                 Respond in valid JSON with an "answers" array:
                 {
                   "answers": [
@@ -303,13 +303,13 @@ public class GeminiService {
 
         String prompt = String.format("""
                 Playwright encountered an error while automating a LinkedIn Easy Apply form.
-
+                
                 PAGE URL: %s
                 ERROR: %s
-
+                
                 DOM SNIPPET:
                 %s
-
+                
                 TASK:
                 What is the correct CSS selector or Playwright action to proceed past this error?
                 Respond in this structured format:
@@ -335,10 +335,10 @@ public class GeminiService {
 
         String prompt = String.format("""
                 Extract the 6-digit verification code or PIN from this LinkedIn security email.
-
+                
                 EMAIL CONTENT:
                 %s
-
+                
                 Output ONLY the 6 digits (e.g. 123456) with no words, markdown, or spaces. If not found, output NONE.
                 """,
                 truncate(emailContent, 3000)

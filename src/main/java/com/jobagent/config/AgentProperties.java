@@ -114,7 +114,31 @@ public class AgentProperties {
     }
 
     public String getGeminiApiKey() {
-        return geminiApiKey;
+        if (geminiApiKey != null && !geminiApiKey.isBlank()) {
+            return geminiApiKey.trim();
+        }
+        String envVal = System.getenv("GEMINI_API_KEY");
+        if (envVal != null && !envVal.isBlank()) {
+            return envVal.trim();
+        }
+        java.io.File dotEnv = new java.io.File(".env");
+        if (dotEnv.exists() && dotEnv.isFile()) {
+            try {
+                for (String line : java.nio.file.Files.readAllLines(dotEnv.toPath())) {
+                    String trimmed = line.trim();
+                    if (trimmed.startsWith("GEMINI_API_KEY=")) {
+                        String val = trimmed.substring("GEMINI_API_KEY=".length()).trim();
+                        if (val.startsWith("\"") && val.endsWith("\"") && val.length() >= 2) {
+                            val = val.substring(1, val.length() - 1);
+                        }
+                        if (!val.isBlank()) {
+                            return val;
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+        return "";
     }
 
     public void setGeminiApiKey(String geminiApiKey) {

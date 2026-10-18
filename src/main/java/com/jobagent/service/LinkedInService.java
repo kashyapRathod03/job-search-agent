@@ -96,8 +96,14 @@ public class LinkedInService {
     // =========================================================================
 
     public boolean login(Page page) {
-        log.info("Checking LinkedIn authentication status...");
-        playwrightService.navigateWithDelay("https://www.linkedin.com/feed/?locale=en_US");
+        log.info("Checking LinkedIn authentication status via provided session cookies...");
+        if (isLoggedIn(page)) {
+            log.info("Already authenticated on current LinkedIn page: {}", page.url());
+            playwrightService.saveSessionState();
+            return true;
+        }
+
+        playwrightService.navigateWithDelay("https://www.linkedin.com/feed");
 
         // Allow any immediate server redirect to settle
         try {
@@ -105,136 +111,23 @@ public class LinkedInService {
                     new Page.WaitForLoadStateOptions().setTimeout(3000));
         } catch (Exception ignored) {}
 
-        if (isLoggedIn(page)) {
-            log.info("Already authenticated via saved session.");
-            return true;
-        }
-
-        // Check if navigation immediately redirected to checkpoint/challenge
-        if (page.url().contains("checkpoint") || page.url().contains("challenge") || is2FAPage(page)) {
-            log.info("Security challenge / checkpoint detected: {}", page.url());
-            handle2FA(page);
-            if (isLoggedIn(page)) {
-                log.info("Successfully authenticated after challenge!");
-                playwrightService.saveSessionState();
-                return true;
-            }
-            return false;
-        }
-
-        // Navigate to login page
-        log.info("No active session found. Navigating to LinkedIn login...");
-        playwrightService.navigateWithDelay("https://www.linkedin.com/login?locale=en_US");
-
-        if (page.url().contains("checkpoint") || page.url().contains("challenge") || is2FAPage(page)) {
-            log.info("Redirected to checkpoint / challenge from login: {}", page.url());
-            handle2FA(page);
-            if (isLoggedIn(page)) {
-                log.info("Successfully authenticated after challenge!");
-                playwrightService.saveSessionState();
-                return true;
-            }
-            return false;
-        }
-
-        String username = properties.getLinkedinUsername();
-        String password = properties.getLinkedinPassword();
-
-        if (username == null || username.isBlank() || password == null || password.isBlank()) {
-            log.error("LinkedIn credentials missing in configuration.");
-            return false;
-        }
-
-        log.info("Current landing page URL: {}, Title: {}", page.url(), page.title());
+        log.info("Page after feed navigation: URL={}, Title={}", page.url(), page.title());
         try {
-            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("login_page.png")));
+            page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("login_session.png")));
         } catch (Exception ignored) {}
-
-        // Dismiss cookie banner if present
-        try {
-            Locator cookieBtn = page.locator("button:has-text('Accept'), button:has-text('Reject'), button[action-type='ACCEPT']").first();
-            if (cookieBtn.count() > 0 && cookieBtn.isVisible()) {
-                cookieBtn.click();
-                playwrightService.sleepShort();
-            }
-        } catch (Exception ignored) {}
-
-        // If on homepage with a 'Sign in' link, click it
-        try {
-            Locator navSignIn = page.locator("a.nav__button-secondary:has-text('Sign in'), a[href*='login']").first();
-            if (navSignIn.count() > 0 && navSignIn.isVisible()) {
-                log.info("Clicking landing page 'Sign in' link...");
-                navSignIn.click();
-                playwrightService.sleepRandomDelay();
-            }
-        } catch (Exception ignored) {}
-
-        // Try auto-filling credentials
-        try {
-            Locator userField = page.getByLabel("Email or phone");
-            if (userField.count() == 0 || !userField.first().isVisible()) {
-                userField = page.locator("#username:visible, input[name='session_key']:visible, input#session_key:visible, input[aria-label*='Email' i]:visible, input[type='email']:visible").first();
-            } else {
-                userField = userField.first();
-            }
-
-            if (userField.count() > 0 && userField.isVisible()) {
-                log.info("Typing username into login form...");
-                playwrightService.humanType(userField, username);
-
-                Locator passField = page.getByLabel("Password");
-                if (passField.count() == 0 || !passField.first().isVisible()) {
-                    passField = page.locator("#password:visible, input[name='session_password']:visible, input#session_password:visible, input[type='password']:visible").first();
-                } else {
-                    passField = passField.first();
-                }
-
-                if (passField.count() > 0 && passField.isVisible()) {
-                    log.info("Typing password into login form...");
-                    playwrightService.humanType(passField, password);
-                    passField.press("Enter");
-                    playwrightService.sleepRandomDelay();
-                }
-
-                // Click explicit Sign in button if still visible
-                Locator signInBtn = page.locator("button:text-is('Sign in'):visible, button.btn__primary--large:visible, button[type='submit']:has-text('Sign in'):visible").first();
-                if (signInBtn.count() > 0 && signInBtn.isVisible()) {
-                    log.info("Clicking 'Sign in' submit button...");
-                    playwrightService.humanClick(signInBtn);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Credential auto-fill notice: {}", e.getMessage());
-        }
-
-        // Check if 2FA or security challenge is presented
-        if (page.url().contains("checkpoint") || page.url().contains("challenge") || is2FAPage(page)) {
-            log.info("Security challenge / 2FA detected. Waiting for resolution...");
-            handle2FA(page);
-        }
 
         if (isLoggedIn(page)) {
-            log.info("Successfully authenticated with LinkedIn!");
+            log.info("Successfully authenticated via provided session cookies!");
             playwrightService.saveSessionState();
             return true;
         }
 
-        // If not yet authenticated in non-headless mode, wait for user in browser
-        if (!properties.isLinkedinHeadless()) {
-            log.info(">>> Please complete login in the open browser window. Waiting up to 180s... <<<");
-            for (int w = 0; w < 90; w++) {
-                try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
-                if (isLoggedIn(page)) {
-                    log.info("Successfully authenticated after user login in browser!");
-                    playwrightService.saveSessionState();
-                    return true;
-                }
-                if (w % 10 == 0) {
-                    log.info("Waiting for authentication in browser... ({}s / 180s elapsed)", w * 2);
-                }
-            }
-        }
-
+        log.warn("================================================================================");
+        log.warn("LinkedIn authentication check failed. No active session detected.");
+        log.warn("Current landing URL: {}", page.url());
+        log.warn("Please log into LinkedIn manually in your browser, copy your cookies, and paste");
+        log.warn("them into .session/cookies.txt (or .session/cookies.json), then rerun the application.");
+        log.warn("================================================================================");
         return false;
     }
 
@@ -305,6 +198,12 @@ public class LinkedInService {
     private boolean isLoggedIn(Page page) {
         try {
             String url = page.url();
+            if (url == null || url.startsWith("chrome-error") || url.equals("about:blank")) {
+                return false;
+            }
+            if (url.contains("/login") || url.contains("/uas/login") || url.contains("/authwall") || url.contains("checkpoint") || url.contains("challenge")) {
+                return false;
+            }
             if (url.contains("/feed") || url.contains("/jobs") || url.contains("/mynetwork")) {
                 return true;
             }
@@ -326,19 +225,24 @@ public class LinkedInService {
             String encodedLocation = URLEncoder.encode(location, StandardCharsets.UTF_8);
 
             String searchUrl = String.format(
-                    "https://www.linkedin.com/jobs/search/?keywords=%s&location=%s&f_AL=true&f_TPR=r604800&f_JT=F&locale=en_US",
+                    "https://www.linkedin.com/jobs/search/?keywords=%s&location=%s&f_AL=true&f_TPR=r604800&f_JT=F",
                     encodedKeyword, encodedLocation
             );
 
             log.info("Searching LinkedIn: {}", searchUrl);
             playwrightService.navigateWithDelay(searchUrl);
 
+            log.info("Page after search: URL={}, Title={}", page.url(), page.title());
             try {
-                page.waitForSelector("ul.scaffold-layout__list-container > li, .jobs-search-results-list li, .job-card-container",
+                page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get("search_page.png")));
+            } catch (Exception ignored) {}
+
+            try {
+                page.waitForSelector("ul.scaffold-layout__list-container > li, .jobs-search-results-list li, .job-card-container, li[data-occludable-job-id]",
                         new Page.WaitForSelectorOptions().setTimeout(10000));
             } catch (Exception ignored) {}
 
-            Locator cards = page.locator("ul.scaffold-layout__list-container > li, .jobs-search-results-list li, .job-card-container");
+            Locator cards = page.locator("ul.scaffold-layout__list-container > li, .jobs-search-results-list li, .job-card-container, li[data-occludable-job-id]");
             int total = cards.count();
             log.info("Found {} job cards on search page.", total);
 

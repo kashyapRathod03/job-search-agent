@@ -115,4 +115,4 @@ Application status
 Clearly mark the email as a HIGH PRIORITY JOB ALERT.
 Do not expose, print, log, or copy Gmail credentials in any output or tracking file.
 Use the configured Gmail integration/secure environment credentials for sending the email.
-Continue the normal job-search and application workflow after sending the notification.
+Continue the normal job-search and application workflow after sending the notification. 
